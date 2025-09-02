@@ -1,31 +1,50 @@
 import cv2
 import numpy as np
+#sourch from chat gpt
+
+# 초기값 설정
+drawing = False       # 마우스 클릭 여부
+last_point = (-1, -1) # 마지막 마우스 위치
+color = (0, 0, 255)   # 초기 색상 (빨강)
+
+# 마우스 콜백 함수
+def draw(event, x, y, flags, param):
+    global drawing, last_point, color, image
+
+    if event == cv2.EVENT_LBUTTONDOWN:
+        drawing = True
+        last_point = (x, y)
+
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if drawing:
+            cv2.line(image, last_point, (x, y), color, thickness=3)
+            last_point = (x, y)
+
+    elif event == cv2.EVENT_LBUTTONUP:
+        drawing = False
+        cv2.line(image, last_point, (x, y), color, thickness=3)
 
 def main():
-    switch_case = {
-        ord('r'): 1,
-        ord('g'): 10,
-        ord('b'): 30,
-        65361: "왼쪽 방향키",
-        65363: "오른쪽 방향키",
-        65364: "아래쪽 방향키",
-        65362: "위쪽 방향키",
-    }
+    global image, color
+    width, height = 800, 600
+    image = np.ones((height, width, 3), np.uint8) * 255  # 흰색 배경
 
-    cv2.namedWindow("keyboard Event")
-    screen_width = 800
-    screen_height = 600
-    image = np.ones((screen_height, screen_width), np.uint8)
+    cv2.namedWindow("Paint")
+    cv2.setMouseCallback("Paint", draw)
 
     while True:
-        key = cv2.waitKeyEx(100)
-        if key == 27: break
-        try:
-            print(f"key value : {image[0:0:1]}")
-            image[:] += switch_case[key]
-            cv2.imshow("keyboard Event", image)
-        except KeyError:
-            result = -1
+        cv2.imshow("Paint", image)
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == 27:  # ESC 종료
+            break
+        elif key == ord('r'):
+            color = (0, 0, 255)   # 빨강 (BGR)
+        elif key == ord('g'):
+            color = (0, 255, 0)   # 초록
+        elif key == ord('b'):
+            color = (255, 0, 0)   # 파랑
+
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
